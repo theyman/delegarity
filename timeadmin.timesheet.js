@@ -11,6 +11,7 @@
         const TARGET_URL = "https://empower-sso.capgemini.com/niku/nu#action:" + ACTION;
         const LS_KEY_MY_DELEGEES = ACTION + ".myDelegees";
         const WAIT_HEADER = "https://empower-sso.capgemini.com/niku/ui/uitk/images/wait_header.gif"
+        var _workspaceElement = null;
 
         // public data members
         timeadmin.resourceNameElement = null;
@@ -20,42 +21,69 @@
             if( document.location.href.toLowerCase().startsWith(TARGET_URL)) {
                 delegarity.onClarityReady(injectDelegees, TARGET_URL);
             }
-        };
+        };           
+            
+        //private: apply templates and content to delegarity container
+        function buildDelegarityContainer(data) {
+            var delegarityContainer = document.getElementById("delegarityContainer");
 
-        // private: inject 'delegees' widget into timeadmin.timesheetbrowser
-        function injectDelegees(workspaceElement)
-        {
-            var filterSection = workspaceElement.getElementsByClassName("ppm_filter_section")[0];
-            var filterTable = filterSection.childNodes[1];
-            var mainfilterRow = filterTable.getElementsByTagName("tr")[0];
-            var delegarityCell = mainfilterRow.insertCell(1);
+            if( delegarityContainer === null || delegarityContainer === undefined) {
+                var filterSection = _workspaceElement.getElementsByClassName("ppm_filter_section")[0];
+                var filterTable = filterSection.childNodes[1];
+                var mainfilterRow = filterTable.getElementsByTagName("tr")[0];              
 
-            mainfilterRow.childNodes[0].width="30%";
-            mainfilterRow.childNodes[1].width="20%";
-            mainfilterRow.childNodes[2].width="40%";
+                delegarityContainer = mainfilterRow.insertCell(1);
+                delegarityContainer.id = "delegarityContainer";
+                delegarityContainer.style.verticalAlign = "top";
 
-            timeadmin.resourceNameElement = document.getElementsByName("ff_res_name")[0];
-
-            var data = JSON.parse(localStorage.getItem(LS_KEY_MY_DELEGEES));
+                mainfilterRow.childNodes[0].width="30%";
+                mainfilterRow.childNodes[1].width="20%";
+                mainfilterRow.childNodes[2].width="40%";          
+            }
 
             var options = {
                 "delegeesOptions":delegarity.useTemplatebyId("delegeesSelectOptions-template", data)
-            }
-            delegarityCell.style.verticalAlign = "top";
-            delegarityCell.innerHTML = delegarity.useTemplatebyId("delegeesSelect-template", options);
+            };
+            delegarityContainer.innerHTML = delegarity.useTemplatebyId("delegeesSelect-template", options);
+        }
 
-            //sync dropdown with actual value in input field
+        //private: sync dropdown with actual value in ff_res_name
+        function syncMyDelegeesWidget() {
             var val = (timeadmin.resourceNameElement.value).trim();
             var selectElement = document.getElementById("delegarity-delegees");
+
             var opts = selectElement.options;
             for(var opt, j = 0; opt = opts[j]; j++) {
                 if(opt.value == val) {
                     selectElement.selectedIndex = j;
                     break;
                 }
-            }
+            }            
+        }
+        // private: inject 'My Delegees' widget into timeadmin.timesheetbrowser
+        function injectDelegees(workspaceElement)
+        {
+            _workspaceElement = workspaceElement;
+            timeadmin.resourceNameElement = document.getElementsByName("ff_res_name")[0];
 
-            //set autocomplete on existing resource name field
+            var data = JSON.parse(localStorage.getItem(LS_KEY_MY_DELEGEES));
+            buildDelegarityContainer(data);
+            syncMyDelegeesWidget();
+
+            //add "Select my Delegee" image button to ff_res_name
+            var resourceNameParent = timeadmin.resourceNameElement.parentNode;
+            var selectImage = new Image(16, 16);
+            selectImage.src="ui/uitk/images/s.gif"
+            selectImage.className = "caui-ndePaginationLast x-icon-btn";
+            selectImage.border = 0;
+            selectImage.alt = "Select My Delegee";
+            selectImage.title = "Select My Delegee";
+            selectImage.style.verticalAlign = "middle";
+            selectImage.style.marginLeft = "5px";
+            selectImage.addEventListener("click", delegarity.timeadmin.selectMyDelegee)
+            resourceNameParent.appendChild(selectImage);
+            
+            //set autocomplete to ff_res_name
             $(timeadmin.resourceNameElement).autocomplete({
                 source: function( request, response ) {
                     $.ajax( {
@@ -88,9 +116,54 @@
                 messages: {
                     noResults: '',
                     results: function() {}
-                }                
+                }
             })
-        }
+        };
+
+        //private: helper function to detect empty strings
+        function isEmptyOrSpaces(str){
+            return str === null || str.match(/^ *$/) !== null;
+        }        
+
+        // public: copy 'resource name' into 'My Delegees' widget
+        timeadmin.selectMyDelegee = function () {
+            var resourceName = delegarity.timeadmin.resourceNameElement.value;
+            
+            if(isEmptyOrSpaces(resourceName)) {
+                return false;
+            }
+            
+            var data = JSON.parse(localStorage.getItem(LS_KEY_MY_DELEGEES));
+            var found = false;            
+            var resourceItem = {
+                value: resourceName,
+                description: resourceName
+            };
+
+            if(data === null || data === undefined)
+            {
+                data = [{value: "",description: ""},resourceItem];
+                localStorage.setItem(LS_KEY_MY_DELEGEES, JSON.stringify(data));
+                buildDelegarityContainer(data);
+                syncMyDelegeesWidget();
+                return true;
+            } else {
+                for(var i = 0; i < data.length; i++) {
+                    if (data[i].value === resourceName) {
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found) {
+                    data.push(resourceItem);
+                    localStorage.setItem(LS_KEY_MY_DELEGEES, JSON.stringify(data));
+                    buildDelegarityContainer(data);
+                    syncMyDelegeesWidget();
+                    return true;
+                }
+            }
+            return false;
+        };
         
     })(delegarity.timeadmin = delegarity.timeadmin || {})
 

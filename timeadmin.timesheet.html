@@ -1,27 +1,20 @@
-<script type="template" id="delegeesSelect-template">
-<table width="100%" border="0" cellspacing="0" cellpadding="3" class="ppm_attributes_table" role="presentation">
-   <tbody>
-      <tr class="ppm_attribute_row">
-         <td class="ppm_field_label"><label for="delegarity-delegees">My Delegees</label></td>
-         <td>
-            <table cellspacing="0" role="presentation">
-               <tbody>
-                  <tr class="tableNestedAttribute">
-                     <td class="tableNestedAttribute">
-                        <select name="ff_adjust_view" id="delegarity-delegees" style="" onkeypress="return handleEnter(event, &quot;applyFilter&quot;, &quot;timesheetBrowser.xsl&quot;)" class="ppm_field formFieldNoWidth" onchange="delegarity.timeadmin.resourceNameElement.value=this.value;">
-                        {{delegeesOptions}}
-                        </select>
-                     </td>
-                     <td class="actions"></td>
-                  </tr>
-               </tbody>
-            </table>
-         </td>
-      </tr>    
-   </tbody>
+<script id="delegee-widget" type="text/x-handlebars-template">
+<table width="100%" border="0" cellspacing="1" cellpadding="0" role="presentation" class="ppm_grid">
+  <thead type="headerRow">
+    <tr class="rowOff" header="true" valign="top" role="row">
+      <th scope="col" role="columnheader" class="colHeadNoSort">My Delegees</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each delegees}}
+      <tr>
+        <td>{{> delegee}}</td>
+      </tr>
+    {{/each}}
+  </tbody>
 </table>
 </script>
 
-<script type="template" id="delegeesSelectOptions-template">
-<option value="{{value}}">{{Description}}</option>
+<script id="delegee-partial" type="text/x-handlebars-template">
+<span id="{{value}}" class="delegeeShort" style="cursor: pointer; cursor: hand;" >{{description}}</span>
 </script>

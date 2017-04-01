@@ -5,6 +5,7 @@
 // @description  Add list of delegees to Clarity Timesheets search criteria
 // @author       Bart Jolling
 // @match        https://empower-sso.capgemini.com/niku/nu
+// @require      https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.6/handlebars.min.js
 // @resource     delegaritycorejs delegarity.core.js
 // @resource     timesheetsjs     timeadmin.timesheet.js
 // @resource     timesheetshtml   timeadmin.timesheet.html
@@ -14,8 +15,40 @@
 // @grant        GM_getResourceText
 // ==/UserScript==
 
-function injectScript(jsContent, scriptId) {
 
+/**
+ * Injects a link to a javascript file in the HEAD of a document.
+ * @param {string} url - location of the javascript file to inject.
+ * */
+function injectScriptLink(url, mimetype) {
+    var scriptElement = document.createElement('script');
+    scriptElement.setAttribute("type", mimetype);
+    scriptElement.setAttribute("src", url);
+
+    if (typeof scriptElement != "undefined")
+        document.getElementsByTagName("head")[0].appendChild(scriptElement);
+}
+
+/**
+ * Injects a link to a stylesheet in the HEAD of a document.
+ * @param {string} url - location of the javascript file to inject.
+ * */
+function injectLinkStylesheet(url, mimetype) {
+    var linkElement = document.createElement("link");
+    linkElement.setAttribute("rel", "stylesheet");
+    linkElement.setAttribute("type", mimetype);
+    linkElement.setAttribute("href", url);
+
+    if (typeof linkElement != "undefined")
+        document.getElementsByTagName("head")[0].appendChild(linkElement);
+}
+
+/**
+ * Injects a block of javascript into a new script tag in the HEAD of a document.
+ * @param {string} jsContent - javascript code to inject.
+ * @param {string} scriptId - Id of the script tag that will be injected.
+ * */
+function injectScript(jsContent, scriptId) {
     var existingElement = document.getElementById(scriptId);
 
     if(existingElement !== null && existingElement.type === "text/javascript") {
@@ -31,6 +64,10 @@ function injectScript(jsContent, scriptId) {
     headElement.appendChild(scriptElement);
 }
 
+/**
+ * Appends a block of HTML to the body tag
+ * @param {string} htmlContent - HTML to inject.
+ * */
 function injectHtml(htmlContent) {
 
     var div = document.createElement('div');
@@ -40,8 +77,9 @@ function injectHtml(htmlContent) {
          document.body.appendChild(div.children[0]);
     }
 }
-
-//Main function to inject @resources into the target page
+/**
+ *Main function to inject @resources into the target page
+ * */
 (function() {
     'use strict';
 
@@ -68,9 +106,8 @@ function injectHtml(htmlContent) {
                 // var html = args[0];
                 // var res  = args[1];
                 var page = args[2];
-
                 if("timeadmin.timesheetBrowser" === page.id) {
-                    delegarity.timeadmin.timesheetbrowser();
+                    delegarity.timeadmin.timesheetbrowser(Handlebars);
                 }
             });
         }

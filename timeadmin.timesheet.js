@@ -12,19 +12,21 @@
         const LS_KEY_MY_DELEGEES = ACTION + ".myDelegees";
         const WAIT_HEADER = "https://empower-sso.capgemini.com/niku/ui/uitk/images/wait_header.gif"
         var _workspaceElement = null;
+        var _handlebars = null;
 
         // public data members
         timeadmin.resourceNameElement = null;
 
         // public: start monitoring when user navigates to timeadmin.timesheetbrowser and enhance it with Delegarity
-        timeadmin.timesheetbrowser = function() {
+        timeadmin.timesheetbrowser = function(handlebars) {
             if( document.location.href.toLowerCase().startsWith(TARGET_URL)) {
+                _handlebars = handlebars
                 delegarity.onClarityReady(injectDelegees, TARGET_URL);
             }
         };           
             
         //private: apply templates and content to delegarity container
-        function buildDelegarityContainer(data) {
+        function buildDelegarityWidget(data) {
             var delegarityContainer = document.getElementById("delegarityContainer");
 
             if( delegarityContainer === null || delegarityContainer === undefined) {
@@ -41,25 +43,21 @@
                 mainfilterRow.childNodes[2].width="40%";          
             }
 
-            var options = {
-                "delegeesOptions":delegarity.useTemplatebyId("delegeesSelectOptions-template", data)
-            };
-            delegarityContainer.innerHTML = delegarity.useTemplatebyId("delegeesSelect-template", options);
+            //build table using Handlerbar.js partials and templates
+            var delegeesWidget = _handlebars.compile($("#delegee-widget").html());
+            _handlebars.registerPartial("delegee", $("#delegee-partial").html());
+            delegarityContainer.innerHTML = delegeesWidget({delegees: data});
+
+            //register events
+            var delegeeRows  = delegarityContainer.getElementsByClassName("delegeeShort");
+            for (var index = 0; index < delegeeRows.length; ++index) {
+                var item = delegeeRows[index];
+                item.addEventListener("click", function(){
+                    delegarity.timeadmin.resourceNameElement.value=this.innerText;
+                });
+            }
         }
 
-        //private: sync dropdown with actual value in ff_res_name
-        function syncMyDelegeesWidget() {
-            var val = (timeadmin.resourceNameElement.value).trim();
-            var selectElement = document.getElementById("delegarity-delegees");
-
-            var opts = selectElement.options;
-            for(var opt, j = 0; opt = opts[j]; j++) {
-                if(opt.value == val) {
-                    selectElement.selectedIndex = j;
-                    break;
-                }
-            }            
-        }
         // private: inject 'My Delegees' widget into timeadmin.timesheetbrowser
         function injectDelegees(workspaceElement)
         {
@@ -67,8 +65,7 @@
             timeadmin.resourceNameElement = document.getElementsByName("ff_res_name")[0];
 
             var data = JSON.parse(localStorage.getItem(LS_KEY_MY_DELEGEES));
-            buildDelegarityContainer(data);
-            syncMyDelegeesWidget();
+            buildDelegarityWidget(data);
 
             //add "Select my Delegee" image button to ff_res_name
             var resourceNameParent = timeadmin.resourceNameElement.parentNode;
@@ -142,10 +139,9 @@
 
             if(data === null || data === undefined)
             {
-                data = [{value: "",description: ""},resourceItem];
+                data = [resourceItem];
                 localStorage.setItem(LS_KEY_MY_DELEGEES, JSON.stringify(data));
-                buildDelegarityContainer(data);
-                syncMyDelegeesWidget();
+                buildDelegarityWidget(data);
                 return true;
             } else {
                 for(var i = 0; i < data.length; i++) {
@@ -156,9 +152,11 @@
                 }
                 if(!found) {
                     data.push(resourceItem);
+                    data.sort(function(a,b) {
+                        return a.value.localeCompare(b.value)
+                    });
                     localStorage.setItem(LS_KEY_MY_DELEGEES, JSON.stringify(data));
-                    buildDelegarityContainer(data);
-                    syncMyDelegeesWidget();
+                    buildDelegarityWidget(data);
                     return true;
                 }
             }

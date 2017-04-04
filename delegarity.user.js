@@ -9,8 +9,6 @@
 // @resource     delegaritycorejs delegarity.core.js
 // @resource     timesheetsjs     timeadmin.timesheet.js
 // @resource     timesheetshtml   timeadmin.timesheet.html
-// @resource     getResourcesjs   projmgr.getResources.js
-// @resource     getResourceshtml projmgr.getResources.html
 // @run-at       document-idle
 // @grant        GM_getResourceText
 // ==/UserScript==
@@ -77,6 +75,7 @@ function injectHtml(htmlContent) {
          document.body.appendChild(div.children[0]);
     }
 }
+
 /**
  *Main function to inject @resources into the target page
  * */

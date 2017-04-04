@@ -1,14 +1,24 @@
 <script id="delegee-widget" type="text/x-handlebars-template">
-<table width="100%" border="0" cellspacing="1" cellpadding="0" role="presentation" class="ppm_grid">
+<table width="100%" border="0" cellspacing="0" cellpadding="0" role="presentation" class="ppm_grid">
   <thead type="headerRow">
     <tr class="rowOff" header="true" valign="top" role="row">
+      <th scope="col" role="columnheader" class="colHeadNoSort" width="40px"></th>
       <th scope="col" role="columnheader" class="colHeadNoSort">My Delegees</th>
-    </tr>
+      <th scope="col" role="columnheader" class="colHeadNoSort" width="40px"></th>
+    </tr>    
   </thead>
   <tbody>
-    {{#each delegees}}
-      <tr>
+    {{#each this}}
+      <tr height="20px" data-delegee="{{value}}" class="delegeeLong" >
+        <td>
+          <img name="selectDelegee" border="0" title="Select Delegee" align="absmiddle" class="caui-ndePaginationPrev ui-browse-lookup-image" alt="Select" src="ui/uitk/images/s.gif" >
+          <img name="filterTimesheets" border="0" title="Filter Timesheets" align="absmiddle" class="caui-ndeTimesheet ui-browse-lookup-image" alt="Timesheets" src="ui/uitk/images/s.gif">
+        </td>
         <td>{{> delegee}}</td>
+        <td>
+          <img name="removeDelegee" border="0" title="Remove Delegee" align="absmiddle" class="caui-workspaceRemove ui-browse-lookup-image" alt="Remove" src="ui/uitk/images/s.gif">
+          <img name="viewDelegee" border="0" title="View Delegee" align="absmiddle" class="ui-browse-lookup-image" alt="View" src="ui/uitk/images/s.gif" style="height: 16px;width: 16px;background: url(ui/uitk/images/fields.png) no-repeat -16px -23px;">
+        </td>
       </tr>
     {{/each}}
   </tbody>
@@ -16,5 +26,5 @@
 </script>
 
 <script id="delegee-partial" type="text/x-handlebars-template">
-<span id="{{value}}" class="delegeeShort" style="cursor: pointer; cursor: hand;" >{{description}}</span>
+<span id="{{value}}" class="delegeeShort">{{description}}</span>
 </script>

@@ -16,6 +16,7 @@
 
         // public data members
         timeadmin.resourceNameElement = null;
+        timeadmin.uniqueNameElement = null;
 
         // public: start monitoring when user navigates to timeadmin.timesheetbrowser and enhance it with Delegarity
         timeadmin.timesheetbrowser = function(handlebars) {
@@ -46,14 +47,54 @@
             //build table using Handlerbar.js partials and templates
             var delegeesWidget = _handlebars.compile($("#delegee-widget").html());
             _handlebars.registerPartial("delegee", $("#delegee-partial").html());
-            delegarityContainer.innerHTML = delegeesWidget({delegees: data});
+            delegarityContainer.innerHTML = delegeesWidget(data);
 
             //register events
-            var delegeeRows  = delegarityContainer.getElementsByClassName("delegeeShort");
+            var delegeeRows  = delegarityContainer.getElementsByClassName("delegeeLong");
             for (var index = 0; index < delegeeRows.length; ++index) {
-                var item = delegeeRows[index];
-                item.addEventListener("click", function(){
-                    delegarity.timeadmin.resourceNameElement.value=this.innerText;
+
+                function getId(imgElement) {
+                    return imgElement.parentNode.parentNode.getAttribute("data-delegee");
+                }
+
+                var row = delegeeRows[index];
+                var filterCell = row.cells[0];
+                var actionCell = row.cells[2];
+
+                //auto fills Resource Name
+                $(filterCell).children("img[name=selectDelegee]").click(function(){
+                    delegarity.timeadmin.resourceNameElement.value=getId(this);
+                    delegarity.timeadmin.uniqueNameElement.value="";
+                });
+
+                //auto fills Resource Name & submits filter form
+                $(filterCell).children("img[name=filterTimesheets]").click(function(){
+                    delegarity.timeadmin.resourceNameElement.value=getId(this);
+                    delegarity.timeadmin.uniqueNameElement.value="";
+                    submitForm('timesheetBrowser.xsl','timeadmin.timesheetBrowser&amp;sortColumn=FULL_NAME&amp;sortDirection=asc&amp;filter_collapsed=false','mode=approve');
+                });
+
+                //removes delegee from local storage
+                $(actionCell).children("img[name=removeDelegee]").click(function(){
+                    var resourceName = getId(this);
+                    var data = JSON.parse(localStorage.getItem(LS_KEY_MY_DELEGEES));
+
+                    if(data !== null && data !== undefined)
+                    {
+                        for(var i = 0; i < data.length; i++) {
+                            if (data[i].value === resourceName) {
+                                data.splice(i,1);
+                                break;
+                            }
+                        }
+                        localStorage.setItem(LS_KEY_MY_DELEGEES, JSON.stringify(data));
+                        buildDelegarityWidget(data);                   
+                    }
+                });
+
+                //navigates to employee details screen
+                $(actionCell).children("img[name=viewDelegee]").click(function(){
+                    delegarity.timeadmin.resourceNameElement.value=getId(this);
                 });
             }
         }
@@ -63,6 +104,7 @@
         {
             _workspaceElement = workspaceElement;
             timeadmin.resourceNameElement = document.getElementsByName("ff_res_name")[0];
+            timeadmin.uniqueNameElement = document.getElementsByName("ff_unique_name")[0];
 
             var data = JSON.parse(localStorage.getItem(LS_KEY_MY_DELEGEES));
             buildDelegarityWidget(data);

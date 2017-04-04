@@ -53,9 +53,17 @@
             var delegeeRows  = delegarityContainer.getElementsByClassName("delegeeLong");
             for (var index = 0; index < delegeeRows.length; ++index) {
 
-                function getId(imgElement) {
-                    return imgElement.parentNode.parentNode.getAttribute("data-delegee");
+                function getValue(imgElement) {
+                    return imgElement.parentNode.parentNode.getAttribute("data-value");
                 }
+
+                 function getUnique(imgElement) {
+                    return imgElement.parentNode.parentNode.getAttribute("data-unique");
+                }
+
+                 function getKey(imgElement) {
+                    return imgElement.parentNode.parentNode.getAttribute("data-key");
+                }                
 
                 var row = delegeeRows[index];
                 var filterCell = row.cells[0];
@@ -63,20 +71,20 @@
 
                 //auto fills Resource Name
                 $(filterCell).children("img[name=selectDelegee]").click(function(){
-                    delegarity.timeadmin.resourceNameElement.value=getId(this);
-                    delegarity.timeadmin.uniqueNameElement.value="";
+                    delegarity.timeadmin.resourceNameElement.value=getValue(this);
+                    delegarity.timeadmin.uniqueNameElement.value=getUnique(this);
                 });
 
                 //auto fills Resource Name & submits filter form
                 $(filterCell).children("img[name=filterTimesheets]").click(function(){
-                    delegarity.timeadmin.resourceNameElement.value=getId(this);
-                    delegarity.timeadmin.uniqueNameElement.value="";
+                    delegarity.timeadmin.resourceNameElement.value=getValue(this);
+                    delegarity.timeadmin.uniqueNameElement.value=getUnique(this);
                     submitForm('timesheetBrowser.xsl','timeadmin.timesheetBrowser&amp;sortColumn=FULL_NAME&amp;sortDirection=asc&amp;filter_collapsed=false','mode=approve');
                 });
 
                 //removes delegee from local storage
                 $(actionCell).children("img[name=removeDelegee]").click(function(){
-                    var resourceName = getId(this);
+                    var resourceName = getValue(this);
                     var data = JSON.parse(localStorage.getItem(LS_KEY_MY_DELEGEES));
 
                     if(data !== null && data !== undefined)
@@ -94,7 +102,10 @@
 
                 //navigates to employee details screen
                 $(actionCell).children("img[name=viewDelegee]").click(function(){
-                    delegarity.timeadmin.resourceNameElement.value=getId(this);
+                    var key = getKey(this);
+                    if(!isEmptyOrSpaces(key)) {
+                        document.location="https://empower-sso.capgemini.com/niku/nu#action:projmgr.editResource&id=" + key;
+                    }
                 });
             }
         }
@@ -143,7 +154,8 @@
                                 return {
                                     id: val.keyAttribute,
                                     label: val.labelAttribute,
-                                    value: val.labelAttribute
+                                    value: val.labelAttribute,
+                                    unique: val.displayValues.results[1]
                                 }
                             });
                             response( results );
@@ -156,7 +168,14 @@
                     noResults: '',
                     results: function() {}
                 }
-            })
+            });
+
+            //when autocomplete item selected, store data in attributes
+            $(timeadmin.resourceNameElement).on( "autocompleteselect", function( event, ui ) {
+                timeadmin.resourceNameElement.setAttribute("value", ui.item.value);
+                timeadmin.resourceNameElement.setAttribute("data-key", ui.item.id);
+                timeadmin.uniqueNameElement.value = ui.item.unique;
+            });
         };
 
         //private: helper function to detect empty strings
@@ -166,8 +185,10 @@
 
         // public: copy 'resource name' into 'My Delegees' widget
         timeadmin.selectMyDelegee = function () {
+            var uniqueName = delegarity.timeadmin.uniqueNameElement.value;
             var resourceName = delegarity.timeadmin.resourceNameElement.value;
-            
+            var resourceKey = delegarity.timeadmin.resourceNameElement.getAttribute("data-key");
+
             if(isEmptyOrSpaces(resourceName)) {
                 return false;
             }
@@ -175,8 +196,9 @@
             var data = JSON.parse(localStorage.getItem(LS_KEY_MY_DELEGEES));
             var found = false;            
             var resourceItem = {
+                key: resourceKey,
                 value: resourceName,
-                description: resourceName
+                unique: uniqueName
             };
 
             if(data === null || data === undefined)

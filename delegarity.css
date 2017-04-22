@@ -1,0 +1,12 @@
+.icon-binoculars {
+    height: 16px;
+    width: 16px;
+    background: url(ui/uitk/images/fields.png) no-repeat -16px -23px;
+}
+
+.icon-checkbox-checked {
+    height: 16px;
+    width: 16px;
+    background: url(ui/uitk/images/fields.png) no-repeat -25px -81px;
+}
+

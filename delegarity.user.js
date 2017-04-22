@@ -6,6 +6,7 @@
 // @author       Bart Jolling
 // @match        https://empower-sso.capgemini.com/niku/nu
 // @require      https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.6/handlebars.min.js
+// @resource     delegaritycss    delegarity.css
 // @resource     delegaritycorejs delegarity.core.js
 // @resource     timesheetsjs     timeadmin.timesheet.js
 // @resource     timesheetshtml   timeadmin.timesheet.html

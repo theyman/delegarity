@@ -1,30 +1,39 @@
 "use strict";
 
-// namespace: delegarity
+/**
+ * namespace: delegarity
+ */
 (function(delegarity, $, undefined) {
 
-    //Polls until Clarity Workspace is loaded and then fires the callback
-    delegarity.onClarityReady = function(callback, timesheetsUrl) {
+    /**
+     * Polls until the Clarity Workspace is loaded and then fires the callback 
+     * @param {function} callback - function to call once the workspace is ready.
+     * @param {string} url - only calls back if the loaded document matches the url. Case-insensitive.
+     */
+    delegarity.onClarityReady = function(callback, url) {
 
         var workspace = document.getElementById("ppm_workspace");
 
         if(workspace) {
-            if(document.location.href.toLowerCase().startsWith(timesheetsUrl)) {
+            if(document.location.href.toLowerCase().startsWith(url)) {
                 callback(workspace);
             }
         }
         else {
             window.setTimeout(function() {
-                delegarity.onClarityReady(callback, timesheetsUrl);
+                delegarity.onClarityReady(callback, url);
             }, 500)
         }
-    }; 
+    };
 
+    /**
+     * Helper function to log more detail when ajax request fails
+     */
     delegarity.logXhrError = function (jqXHR, exception) {
         var msg = '';
 
         if (jqXHR.status === 0) {
-            msg = 'Not connect.\n Verify Network.';
+            msg = 'Not connected. Verify Network.';
         } else if (jqXHR.status == 404) {
             msg = 'Requested page not found. [404]';
         } else if (jqXHR.status == 500) {

@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Delegarity
-// @namespace    https://github.com/BartJolling/delegarity
+// @namespace    https://github.com/theyman/delegarity
 // @version      0.2
 // @description  Add list of delegees to Clarity Timesheets search criteria
 // @author       Bart Jolling
 // @match        https://empower-sso.capgemini.com/niku/nu
-// @require      https://raw.githubusercontent.com/BartJolling/inject-some/master/inject-some.js
+// @require      https://raw.githubusercontent.com/theyman/injectsome/master/inject-some.js
 // @require      https://cdnjs.cloudflare.com/ajax/libs/handlebars.js/4.0.6/handlebars.min.js
 // @resource     delegaritycss    delegarity.css
 // @resource     delegaritycorejs delegarity.core.js
